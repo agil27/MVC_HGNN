@@ -3,7 +3,7 @@ import scipy.io as sio
 from utils import *
 from config import config
 
-# constants
+# 常量
 EEG_NAME_LIST = ['Fp1', 'AF3', 'F3', 'F7', 'FC5', 'FC1', 'C3', 'T7', 'CP5', 'CP1', 'P3', 'P7', 'PO3', 'O1',
                      'Oz', 'Pz', 'Fp2', 'AF4', 'Fz', 'F4', 'F8', 'FC6', 'FC2', 'Cz', 'C4', 'T8', 'CP6', 'CP2',
                      'P4', 'P8', 'PO4', 'O2']
@@ -23,7 +23,7 @@ REGION_SUBLISTS = [PREFRONTAL_LOBE_NAME, LEFT_TEMPOROSPHENOID_NAME, RIGHT_TEMPOR
                     OCCIPITAL_LOBE_NAME, PARIETAL_LOBE_NAME, CENTRAL_NAME, CENTRAL_PARIETAL_LOBE_NAME,
                     FRONTAL_LOBE_NAME, CENTRAL_FRONTAL_LOBE_NAME]
 
-# variables
+
 class DEAPLoader:
     def __init__(self, k_neighbor = 3):
         self.kneigh = k_neighbor
@@ -36,7 +36,6 @@ class DEAPLoader:
                 cur_region.append(idx)
             self.region_select.append(cur_region)
 
-        # load labels
         labels = np.load('data/labels.npz')
         self.vlabel, self.alabel = labels['vlabel'], labels['alabel']
         self.num_of_persons, self.num_of_videos = self.vlabel.shape[0], self.vlabel.shape[1]
@@ -77,12 +76,6 @@ class DEAPLoader:
         return ft, H
 
     def load_DEAP_eeg(self, freq=0, channels=list(range(32))):
-        """
-        load eeg feature: 32 channels * 6 frequencies per record, 32 people * 40 videos = 1280 records
-        :param freq: 0-for all, 1~6: freq0~freq5
-        :param channels: list of channels
-        :return: 1280 * (number of channels * number of frequencies) 2-D numpy array
-        """
         eeg_ft_path = os.path.join(self.cfg.feature_folder, 'deap_features_eeg.mat')
         loaded = sio.loadmat(eeg_ft_path)
         eeg_ft = np.array(loaded['deap_feats_eeg'])
@@ -90,7 +83,6 @@ class DEAPLoader:
             eeg_ft = eeg_ft[:,:,channels,freq-1]
         else:
             eeg_ft = eeg_ft[:,:,channels,:]
-        print(f'EEG feature shape: {eeg_ft.shape}')
         try:
             eeg_ft = np.reshape(eeg_ft, (eeg_ft.shape[0]*eeg_ft.shape[1], eeg_ft.shape[2]*eeg_ft.shape[3]))
         except:
@@ -146,7 +138,6 @@ class DEAPLoader:
             ft_min = ft_list[i].min(axis=0)
             ft_list[i] = (ft_list[i] - (ft_max + ft_min)/2) / (ft_max - ft_min)     # normalization
         non_eeg_ft = np.hstack(ft_list)
-        print(f'non-EEG feature shape: {non_eeg_ft.shape}')
         non_eeg_ft *= .0001
         H = construct_H_with_KNN(non_eeg_ft, self.kneigh)
         non_eeg_ft = {'Valence': non_eeg_ft, 'Arousal': non_eeg_ft}
@@ -168,4 +159,5 @@ class DEAPLoader:
             Hs_k = [Hs_k[i] for i in ft_in_use]
             fts = fts + fts_k
             Hs = Hs + Hs_k
+        print('dataset successfully loaded')
         return fts, Hs

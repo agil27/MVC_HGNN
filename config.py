@@ -16,12 +16,11 @@ class config(object):
         self.m_prob = 1
         self.test_rate = 0.1
         self.normal_feature = True
-        self.log = 'log/fc_valence.txt'
-        self.gpu = 3
+        self.log = 'log/'
         self.print_to_screen = True
 
         # train
-        self.n_epoch = 5000
+        self.n_epoch = 2000
         self.n_hid = 8
         self.device = 'cuda'
         self.lr = 0.001
@@ -33,4 +32,4 @@ class config(object):
         self.gamma = 1
 
         # test
-        self.n_fold = 1
+        self.n_fold = 5

@@ -204,3 +204,33 @@ def construct_H_with_line_KNN(X, K_neigs = [10], is_probH = True, m_prob = 1, nu
         H_tmp = construct_H_with_line_KNN_from_distance(dis_mat, k_neig, is_probH, m_prob, num_person)
         H = hyperedge_concat(H, H_tmp)
     return H
+
+
+def _generate_params_with_H(H):
+    H = np.array(H)
+    n_edge = H.shape[1]
+    # the weight of the hyperedge
+    W = np.ones(n_edge)
+    # the degree of the node
+    DV = np.sum(H * W, axis=1)
+    # the degree of the hyperedge
+    DE = np.sum(H, axis=0)
+
+    invDE = np.mat(np.diag(np.power(DE, -1)))
+    invDV = np.mat(np.diag(np.power(DV, -1)))
+    W = np.mat(np.diag(W))
+    H = np.mat(H)
+    HT = H.T
+
+    # Edge Parmater
+    EP = W * invDE * HT
+    # Node Parameter
+    NP = invDV * H
+
+    return EP, NP
+
+def generate_params_from_H(H):
+    if type(H) != list:
+        return _generate_params_with_H(H)
+    else:
+        return [generate_params_from_H(sub_H) for sub_H in H]
